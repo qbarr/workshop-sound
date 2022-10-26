@@ -11,8 +11,9 @@ void main() {
    float steppY = step(0.95, vUv.y);
    float steppY2 = 1.- step(0.05, vUv.y);
    float border = stepp + stepp2 + steppY + steppY2;
-   if(vIsOn == 0.) {
+    if(vIsOn == 0.) {
       border = 1.0;
-   }
-   gl_FragColor = vec4(vec3(0.,0., border), 1.);
+    }
+   vec3 bord = vec3(0.,0.,border);
+   gl_FragColor = vec4(border * vColor, 1.);
 }

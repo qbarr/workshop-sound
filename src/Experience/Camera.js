@@ -11,16 +11,20 @@ export default class Camera
         this.scene = this.experience.scene
         this.canvas = this.experience.canvas
         this.debug = this.experience.debug
-
+        this.audio = this.experience.audio
+        this.start = false
+        
         this.setInstance()
         this.setControls()
         this.setGUI()
+        
+        this.audio.on('beat',()  => this.startCamera())
     }
 
     setInstance()
     {
         this.instance = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 2000)
-        this.instance.position.set(0, 0, 40)
+        this.instance.position.set(0, 0, 350)
         this.scene.add(this.instance)
     }
 
@@ -46,8 +50,15 @@ export default class Camera
         }
     }
 
+    startCamera() {
+        this.start = true
+    }
+    
+
     update()
     {
         this.controls.update()
+        if(!this.start) return
+        this.instance.position.z -= 0.9
     }
 }

@@ -23,8 +23,8 @@ export default [
         path: 'textures/dirt/normal.jpg'
     },
     {
-        name: 'foxModel',
+        name: 'tunelModel',
         type: 'gltfModel',
-        path: 'models/Fox/glTF/Fox.gltf'
+        path: 'models/tunel5.gltf'
     }
 ]

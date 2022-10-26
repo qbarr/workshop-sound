@@ -9,6 +9,8 @@ import World from './World/World.js'
 import Resources from './Utils/Resources.js'
 
 import sources from './sources.js'
+import AudioManager from './Utils/AudioManager.js'
+import BlobManager from './World/BlobManager.js'
 
 let instance = null
 
@@ -33,7 +35,9 @@ export default class Experience
         this.debug = new Debug()
         this.sizes = new Sizes()
         this.time = new Time()
+        this.audio = new AudioManager()
         this.scene = new THREE.Scene()
+        this.blob = new BlobManager()
         this.resources = new Resources(sources)
         this.camera = new Camera()
         this.renderer = new Renderer()
@@ -53,6 +57,7 @@ export default class Experience
         {
             this.update()
         })
+        
     }
 
     resize()
@@ -64,8 +69,10 @@ export default class Experience
     update()
     {
         this.camera.update()
+        this.audio.update()
         this.world.update()
         this.renderer.update()
+        this.blob.update()
     }
 
     destroy()

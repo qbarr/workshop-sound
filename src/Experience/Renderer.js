@@ -46,7 +46,7 @@ export default class Renderer
 
         this.settings= {
             bloomPass: {
-                bloomStrength: 1.3,
+                bloomStrength: 1.5,
                 bloomRadius: 1.15,
                 bloomThreshold: 0
             },
@@ -161,6 +161,7 @@ export default class Renderer
 
     update()
     {
+        
         this.composer.render()
        // this.instance.render(this.scene, this.camera.instance)
     }
