@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import gsap from 'gsap'
 import faceShaderVert from '../../shaders/FaceShader/faceShader.vert'
 import faceShaderFrag from '../../shaders/FaceShader/faceShader.frag'
+import ecranVert from '../../shaders/EcranShader/ecranVert.vert'
+import ecranFrag from '../../shaders/EcranShader/ecranFrag.frag'
 
 export default class Tunel {
 
@@ -13,16 +15,25 @@ export default class Tunel {
         this.camera = this.experience.camera
         this.scene = this.experience.scene
         this.tunel = null
-        this.faces = []
+        this.doors = []
+        this.backDoor = []
+        this.frontDoor = []
         this.resources = this.experience.resources
-
-        this.doorIsOpen = false
+        this.ecranMaterial = new THREE.ShaderMaterial({
+            vertexShader: ecranVert,
+            fragmentShader: ecranFrag,
+            uniforms:  {
+                uTime: { value: 0 },
+            },
+            side:THREE.DoubleSide
+        })
+        this.doorsOpens = []
         this.setGltf()
         this.duplicateTunel()
         this.audio.on('beat', ()=> {
             this.updateValues()
         })
-
+        
 
     }
 
@@ -40,9 +51,13 @@ export default class Tunel {
         return edges
     }
 
-    setGltf() {
+    setMaterial() {
 
+    }
+
+    setGltf() {
         this.resources.items.tunelModel.scene.traverse((child) => {
+
           if(child.type == 'Mesh' && child.name.toLowerCase() ===  'tunel') {
   
             
@@ -58,11 +73,6 @@ export default class Tunel {
                   },
                   side: THREE.DoubleSide
               })
-  
-              // child.material=  new THREE.MeshBasicMaterial({
-              //     vertexColors: true
-              // })
-  
   
               const positionAttribute = child.geometry.getAttribute( 'position' );
           
@@ -155,7 +165,7 @@ export default class Tunel {
               child.add(edges)
               this.tunel = child
   
-          } else if (child.name.toLowerCase() === 'top' || child.name.toLowerCase() === 'bottom' || child.name.toLowerCase() === 'left' || child.name.toLowerCase() === 'right') {
+          } else if (child.name.toLowerCase().startsWith('top') || child.name.toLowerCase().startsWith('bottom') || child.name.toLowerCase().startsWith('left')  || child.name.toLowerCase().startsWith('right')) {
               const geometry = new THREE.WireframeGeometry( child.geometry );
               const material = new THREE.LineBasicMaterial( { color: 0x0000ff, linewidth: 30, side:THREE.DoubleSide  } );
               const edges = new THREE.LineSegments( geometry, material );
@@ -164,13 +174,22 @@ export default class Tunel {
               child.position.set(0,0, 80)
               child.add(edges)
               child.material = new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.DoubleSide})
-              this.faces.push(child)
+
+              this.backDoor.push(child)
   
           } else if(child.name.toLowerCase() === 'ecran') {
               this.ecran = child
               child.material = new THREE.MeshBasicMaterial({color: 0x00000, side: THREE.DoubleSide})
               child.rotation.y = -Math.PI * 0.5
               child.scale.set(900,900,900)
+              child.material = this.ecranMaterial
+
+              const colors =[]
+              for(let i=0; i< child.geometry.attributes.position.array.length; i+=3) {
+                    colors.push(0,0,1)
+              }
+              child.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( colors, 3 ) );
+
               child.position.set(0,0, 80)
           }
   
@@ -179,62 +198,96 @@ export default class Tunel {
         })
         
         this.scene.add(this.tunel)
-        this.faces.forEach(face => {
+        this.doors = this.frontDoor.concat(this.backDoor)
+
+        this.frontDoor.forEach(face => {
           this.scene.add(face)
         })
   
+        this.backDoor.forEach(face => {
+            this.scene.add(face)
+        })
+        
         this.scene.add(this.ecran)
         
       }
       duplicateTunel() {
         this.tunel2 = this.tunel.clone()
         this.ecran2 = this.ecran.clone()
-        this.faces2 = []
-        this.faces.forEach(face => {
-            this.faces2.push(face.clone())
+        this.ecran2.geometry = this.ecran.geometry.clone()
+        
+        const colors =[]
+        for(let i=0; i< this.ecran2.geometry.attributes.position.array.length; i+=3) {
+              colors.push(1,1,0)
+        }
+        this.ecran2.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( colors, 3 ) );
+
+
+        this.backDoor2 = []
+        this.backDoor.forEach(door => {
+            this.backDoor2.push(door.clone())
         })
 
+    
         this.group = new THREE.Group()
         this.group.add(this.tunel2)
         this.group.add(this.ecran2)
-        this.group.position.set(0,0, -350)
+        this.backDoor2.forEach(door => {
+            this.group.add(door)
+        })
+        this.group.position.set(0,0, -340)
         this.group.rotation.y = Math.PI
         this.scene.add(this.group)
       }
 
       isCloseToDoor() {
 
-        if(this.doorIsOpen) return
+       // this.moveFaces(this.frontDoor,25,70)
+        //this.moveFaces(this.frontDoor2,25,40)
+        this.moveFaces(this.backDoor,25,40)
+         this.moveFaces(this.backDoor2,25,40)
+       
+      }
 
-        const offset = 25
-        const distance = 40
-        console.log('hello');
-        if(Math.abs(this.faces[0].position.z - this.camera.instance.position.z) < distance) {
-            console.log('hello');
-            for(let i=0; i<this.faces.length; i++) {
-                const pos = this.faces[i].position
+        moveFaces(door, offset, distance) {
+            if(this.doorsOpens.includes(door)) return
+            const newDoors  = new THREE.Vector3()
 
-                if(this.faces[i].name === 'bottom') {
-                    console.log(pos);
-                    gsap.to(this.faces[i].position, { duration: 5, y: pos.y - offset})
+            //door[0].getWorldPosition(newDoors)
+            let max = door[0].position
+            if(door === this.backDoor) max = door[0].position.z 
+            if(door === this.backDoor2) max = door[0].position.z -340
+            
+
+            if( (Math.abs(max - this.camera.instance.position.z) < distance)) {
+
+
+                for(let i=0; i<door.length; i++) {
+                    const pos = door[i].position
+
+                    if(door[i].name.startsWith('bottom')) {
+
+                        gsap.to(door[i].position, { duration: 5, y: pos.y - offset})
+                    }
+
+                    if(door[i].name.startsWith('top')) {
+                        gsap.to(door[i].position, { duration: 10, y: pos.y + offset });
+                    }
+
+                    if(door[i].name.startsWith('left')) {
+                        gsap.to(door[i].position, { duration: 10, x: pos.y -offset });
+                    }
+
+                    if(door[i].name.startsWith('right')) {
+                        gsap.to(door[i].position, { duration: 10, x: pos.y +offset  });
+                    }
                 }
+                this.doorsOpens.push(door)
+            } 
+        }
 
-                if(this.faces[i].name === 'top') {
-                    gsap.to(this.faces[i].position, { duration: 10, y: pos.y + offset });
-                }
 
-                if(this.faces[i].name === 'left') {
-                    gsap.to(this.faces[i].position, { duration: 10, x: pos.y -offset });
-                }
-
-                if(this.faces[i].name === 'right') {
-                    gsap.to(this.faces[i].position, { duration: 10, x: pos.y +offset  });
-                }
-            }
-            this.doorIsOpen = true
-
-        } 
-    }
+    
 
     updateValues() {
         this.tunel.material.uniforms.uGroup.value =  Math.floor(Math.random() * 4)
@@ -243,6 +296,7 @@ export default class Tunel {
 
     update()
     {
+        this.ecran.material.uniforms.uTime.value += 0.05
         this.isCloseToDoor()
      //   this.childMaterial.uniforms.uTime.value += 0.05;
     }

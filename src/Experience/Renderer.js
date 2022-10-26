@@ -82,7 +82,7 @@ export default class Renderer
             0.85
         )
         this.bloomPass.threshold = this.settings.bloomThreshold
-        this.bloomPass.strength = this.settings.bloomStrength
+        this.bloomPass.strength = 1.5
         this.bloomPass.radius = this.settings.bloomRadius
 
         this.sobelPass = new ShaderPass(SobelOperatorShader)

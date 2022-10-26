@@ -25,6 +25,6 @@ export default [
     {
         name: 'tunelModel',
         type: 'gltfModel',
-        path: 'models/tunel5.gltf'
+        path: 'models/tunel6.gltf'
     }
 ]

@@ -13,7 +13,7 @@ export default class Cube
         this.debug = this.experience.debug
         this.audio = this.experience.audio
         this.camera = this.experience.camera
-
+        this.time = this.experience.time
         this.setMaterial()
         //this.setModel()
        /*   this.setInstancedGeometry({
@@ -66,7 +66,7 @@ export default class Cube
                    // if(x > 2  & x&
                   //  if(x===0.5) i+=offset
                     aOffsets.push( x * gap.x, y * gap.y , z  * gap.z)
-                    aColors.push(1,0,0)
+                    aColors.push(1,1,0)
                     this.aIsOns.push(Math.random() < 0.9 ? 1.0 : 0.0)
                 }
             }
@@ -183,10 +183,7 @@ export default class Cube
 
     setMaterial() {
         this.uniforms = {
-            uTime: { value: 0.0 },
-            uResolution: { value: new THREE.Vector2() },
-            uMouse: { value: new THREE.Vector2() },
-        //    uTexture: { value: this.resources.items.texture }
+            uTime: { value: 0.0 }
         };
 
          this.material = new THREE.ShaderMaterial({
@@ -262,6 +259,6 @@ export default class Cube
 
   
     update() {
-
+        this.material.uniforms.uTime.value += .05
     }
 }

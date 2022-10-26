@@ -37,7 +37,7 @@ export default class BlobManager {
     
         this.blobs = [this.blob2];
         
-        this.scene.add(...this.blobs);
+        //this.scene.add(...this.blobs);
       }
 
       animBlobs() {
