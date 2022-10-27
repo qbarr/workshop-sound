@@ -83,7 +83,7 @@ export default class Tunel {
                   
               for ( let i = 0; i < positionAttribute.count; i += 3 ) {
                       const rand = Math.random() > 0.5 ? 1 : 0
-                      color.set( 0x000000 );
+                      color.set( 1, 0, 0);
                       
                       // define the same color for each vertex of a triangle
                       
@@ -188,6 +188,7 @@ export default class Tunel {
               for(let i=0; i< child.geometry.attributes.position.array.length; i+=3) {
                     colors.push(0,0,1)
               }
+
               child.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( colors, 3 ) );
 
               child.position.set(0,0, 80)
@@ -213,19 +214,25 @@ export default class Tunel {
       }
       duplicateTunel() {
         this.tunel2 = this.tunel.clone()
+        this.tunel2.children[0].material = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: 30, side:THREE.DoubleSide  } );
+
+
         this.ecran2 = this.ecran.clone()
         this.ecran2.geometry = this.ecran.geometry.clone()
-        
+
         const colors =[]
         for(let i=0; i< this.ecran2.geometry.attributes.position.array.length; i+=3) {
               colors.push(1,1,0)
         }
+        
         this.ecran2.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( colors, 3 ) );
 
 
         this.backDoor2 = []
-        this.backDoor.forEach(door => {
+        this.backDoor.forEach((door,index) => {
             this.backDoor2.push(door.clone())
+            this.backDoor2[index].children[0].material = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: 30, side:THREE.DoubleSide  } );
+
         })
 
     

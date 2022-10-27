@@ -57,7 +57,7 @@ export default class Camera
 
     update()
     {
-        //this.controls.update()
+        // this.controls.update()
         if(!this.start) return
         this.instance.position.z -= 0.9
     }
