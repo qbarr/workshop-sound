@@ -99,7 +99,7 @@ export default class Renderer
     }
 
     setGui() {
-
+        if(!this.debug.ui) return
         const debugFolder = this.debug.ui.addFolder('PostProcessing')    
         const bloomPassFolder = debugFolder.addFolder('Bloompass')    
 
@@ -116,10 +116,7 @@ export default class Renderer
         })
 
         const outlinePassFolder = debugFolder.addFolder('OutlinePass')    
-
-
-
-
+        
         outlinePassFolder.add( this.settings.outlinePass, 'edgeStrength', 0.01, 10 ).onChange(  value => {
 
             this.outlinePass.edgeStrength = Number( value );

@@ -1,7 +1,5 @@
 import * as THREE from 'three'
 import Experience from './Experience.js'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-
 export default class Camera
 {
     constructor()
@@ -13,9 +11,10 @@ export default class Camera
         this.debug = this.experience.debug
         this.audio = this.experience.audio
         this.start = false
-        
+        this.newMouse = new THREE.Vector2()
+        this.raycaster = new THREE.Raycaster()
+
         this.setInstance()
-        this.setControls()
         this.setGUI()
         
         this.audio.on('beat',()  => this.startCamera())
@@ -26,12 +25,6 @@ export default class Camera
         this.instance = new THREE.PerspectiveCamera(35, this.sizes.width / this.sizes.height, 0.1, 2000)
         this.instance.position.set(0, 0, 600)
         this.scene.add(this.instance)
-    }
-
-    setControls()
-    {
-        // this.controls = new OrbitControls(this.instance, this.canvas)
-        // this.controls.enableDamping = true
     }
 
     resize()
@@ -56,9 +49,10 @@ export default class Camera
     
 
     update()
-    {
-        // this.controls.update()
+    {        
+        this.raycaster.setFromCamera(this.newMouse, this.instance );
         if(!this.start) return
         this.instance.position.z -= 0.9
     }
+
 }

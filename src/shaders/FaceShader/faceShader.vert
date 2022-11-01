@@ -24,7 +24,7 @@ void main() {
    vPos = position;
    vIsOn = aIsOn;
   // vIsActive = aIsActive;
-   vec4 pos = projectionMatrix * modelViewMatrix * vec4( position  , 1.0 );
+   vec4 pos = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
   // pos.y += sin(aOffset.x + aOffset.y + uTime) / 3.;
    gl_Position = pos;
 

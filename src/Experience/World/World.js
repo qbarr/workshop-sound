@@ -1,6 +1,5 @@
 import Experience from '../Experience.js'
-import Cube from './Cube.js'
-import Environment from './Environment.js'
+import InstancedGeometries from './InstancedGeometries.js'
 import Tunel from './Tunel.js'
 
 
@@ -17,8 +16,7 @@ export default class World
         this.resources.on('ready', () =>
         {
             // Setup
-            this.environment = new Environment()
-            this.cube = new  Cube()
+            this.cube = new  InstancedGeometries()
             this.tunel = new Tunel()
             this.renderer.setSelectedObjects()
         })

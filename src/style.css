@@ -17,3 +17,28 @@ body
     left: 0;
     outline: none;
 }
+
+#start-button-container {
+    position: absolute;
+    bottom : 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#start-button-container .content {
+    color: #fff;
+    padding: .25em .5em .25em 1em;
+    font-family: Miso,Arial Narrow,sans-serif;
+    font-size: 2.22em;
+    text-transform: uppercase;
+    border: .075em solid #fff;
+    cursor: pointer;
+    display: inline-block;
+    letter-spacing: .15em;
+    position: relative;
+}
+
+#start-button-container.enabled .content{
+    opacity: 1;
+    pointer-events: auto;
+}

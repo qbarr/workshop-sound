@@ -134,6 +134,7 @@ class Audio {
 			this.canvas.width = this.audioRange * W_BAR + (this.audioRange - 1) * SPACE_BAR + MARGIN * 2
 			this.canvas.height = H_CANVAS + MARGIN*2 + H_BEAT_BAR + H_INFO_BAR
 			this.ctx = this.canvas.getContext("2d")
+			this.canvas.style.display = 'none'
 			this.canvas.style.position = "absolute"
 			this.canvas.style.zIndex = 9999
 			this.canvas.style.top = 0

@@ -33,8 +33,42 @@ export default class Tunel {
         this.audio.on('beat', ()=> {
             this.updateValues()
         })
+        this.shiftDoor()
         
+        this.endGame = false
+    }
 
+    isEndGame() {
+        if(this.endGame) return
+        if(this.backDoor[0].position.z - 550 > this.camera.instance.position.z) {
+            this.endGame = true
+            this.audio.stopAudio()
+        }
+
+    }
+
+    shiftDoor() {
+        const offset = 0.08
+        for(let i=0; i< this.backDoor.length; i++) {
+            switch(this.backDoor[i].name) {
+                case 'right':
+                    this.backDoor[i].position.x += offset
+                    break;
+                case 'left':
+                    this.backDoor[i].position.x -= offset
+                    break;
+                case 'top':
+                    this.backDoor[i].position.y += offset
+                    break;
+                case 'bottom':
+                    this.backDoor[i].position.y -= offset
+
+                    break;
+            }
+        }
+
+        console.log(this.backDoor[0].position);
+       
     }
 
     setTransforms(mesh) {
@@ -51,9 +85,6 @@ export default class Tunel {
         return edges
     }
 
-    setMaterial() {
-
-    }
 
     setGltf() {
         this.resources.items.tunelModel.scene.traverse((child) => {
@@ -79,19 +110,11 @@ export default class Tunel {
               const colors = [];
               const aIsOns = []
               const aGroups = []
-              const color = new THREE.Color();
                   
-              for ( let i = 0; i < positionAttribute.count; i += 3 ) {
-                      const rand = Math.random() > 0.5 ? 1 : 0
-                      color.set( 1, 0, 0);
-                      
-                      // define the same color for each vertex of a triangle
-                      
-                      colors.push( color.r, color.g, color.b );
-                      colors.push( color.r, color.g, color.b );
-                      colors.push( color.r, color.g, color.b );
-                  
+              for ( let i = 0; i < positionAttribute.count; i ++ ) {
+                      colors.push(0,0,1 );
               }
+
               const arrayIndex = child.geometry.getIndex().array
   
   
@@ -213,25 +236,34 @@ export default class Tunel {
         
       }
       duplicateTunel() {
+        const newMaterialTunel = new THREE.LineBasicMaterial( { color: 0x592693, linewidth: 30, side:THREE.DoubleSide  } );
         this.tunel2 = this.tunel.clone()
-        this.tunel2.children[0].material = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: 30, side:THREE.DoubleSide  } );
+        this.tunel2.children[0].material = newMaterialTunel
 
+        const tunelColors =[]
+        for(let i=0; i< this.tunel2.geometry.getAttribute('position').count; i++) {
+            tunelColors.push(89/255,38/255,147/255)
+
+        }
+        
+        this.tunel2.geometry = this.tunel.geometry.clone()
+        this.tunel2.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( tunelColors, 3 ) );
 
         this.ecran2 = this.ecran.clone()
         this.ecran2.geometry = this.ecran.geometry.clone()
 
-        const colors =[]
-        for(let i=0; i< this.ecran2.geometry.attributes.position.array.length; i+=3) {
-              colors.push(1,1,0)
+        const ecranColors =[]
+        for(let i=0; i< this.ecran2.geometry.getAttribute('position').count; i++) {
+            ecranColors.push(1,1,0)
         }
         
-        this.ecran2.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( colors, 3 ) );
+        this.ecran2.geometry.setAttribute( 'aColor', new THREE.Float32BufferAttribute( ecranColors, 3 ) );
 
 
         this.backDoor2 = []
         this.backDoor.forEach((door,index) => {
             this.backDoor2.push(door.clone())
-            this.backDoor2[index].children[0].material = new THREE.LineBasicMaterial( { color: 0x00ff00, linewidth: 30, side:THREE.DoubleSide  } );
+            this.backDoor2[index].children[0].material =new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 30, side:THREE.DoubleSide  } );
 
         })
 
@@ -249,62 +281,60 @@ export default class Tunel {
 
       isCloseToDoor() {
 
-       // this.moveFaces(this.frontDoor,25,70)
-        //this.moveFaces(this.frontDoor2,25,40)
         this.moveFaces(this.backDoor,25,40)
          this.moveFaces(this.backDoor2,25,40)
        
       }
 
-        moveFaces(door, offset, distance) {
-            if(this.doorsOpens.includes(door)) return
-            const newDoors  = new THREE.Vector3()
+    moveFaces(door, offset, distance) {
+        if(this.doorsOpens.includes(door)) return
+        const newDoors  = new THREE.Vector3()
 
-            //door[0].getWorldPosition(newDoors)
-            let max = door[0].position
-            if(door === this.backDoor) max = door[0].position.z 
-            if(door === this.backDoor2) max = door[0].position.z -340
-            
+        //door[0].getWorldPosition(newDoors)
+        let max = door[0].position
+        if(door === this.backDoor) max = door[0].position.z 
+        if(door === this.backDoor2) max = door[0].position.z -340
+        
 
-            if( (Math.abs(max - this.camera.instance.position.z) < distance)) {
+        if( (Math.abs(max - this.camera.instance.position.z) < distance)) {
 
 
-                for(let i=0; i<door.length; i++) {
-                    const pos = door[i].position
+            for(let i=0; i<door.length; i++) {
+                const pos = door[i].position
 
-                    if(door[i].name.startsWith('bottom')) {
+                if(door[i].name.startsWith('bottom')) {
 
-                        gsap.to(door[i].position, { duration: 5, y: pos.y - offset})
-                    }
-
-                    if(door[i].name.startsWith('top')) {
-                        gsap.to(door[i].position, { duration: 10, y: pos.y + offset });
-                    }
-
-                    if(door[i].name.startsWith('left')) {
-                        gsap.to(door[i].position, { duration: 10, x: pos.y -offset });
-                    }
-
-                    if(door[i].name.startsWith('right')) {
-                        gsap.to(door[i].position, { duration: 10, x: pos.y +offset  });
-                    }
+                    gsap.to(door[i].position, { duration: 5, y: pos.y - offset})
                 }
-                this.doorsOpens.push(door)
-            } 
-        }
+
+                if(door[i].name.startsWith('top')) {
+                    gsap.to(door[i].position, { duration: 10, y: pos.y + offset });
+                }
+
+                if(door[i].name.startsWith('left')) {
+                    gsap.to(door[i].position, { duration: 10, x: pos.y -offset });
+                }
+
+                if(door[i].name.startsWith('right')) {
+                    gsap.to(door[i].position, { duration: 10, x: pos.y +offset  });
+                }
+            }
+            this.doorsOpens.push(door)
+        } 
+    }
 
 
     
 
     updateValues() {
         this.tunel.material.uniforms.uGroup.value =  Math.floor(Math.random() * 4)
-
-    }
+  }
 
     update()
     {
         this.ecran.material.uniforms.uTime.value += 0.05
         this.isCloseToDoor()
+        this.isEndGame()
      //   this.childMaterial.uniforms.uTime.value += 0.05;
     }
 }

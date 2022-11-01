@@ -3,7 +3,7 @@ import vertexShader from '../../shaders/vertex.glsl'
 import fragmentShader from '../../shaders/fragment.glsl'
 import * as THREE from 'three'
 
-export default class Cube
+export default class InstancedGeometries
 {
     constructor()
     {
@@ -14,17 +14,8 @@ export default class Cube
         this.audio = this.experience.audio
         this.camera = this.experience.camera
         this.time = this.experience.time
-        this.setMaterial()
-        //this.setModel()
-       /*   this.setInstancedGeometry({
-            geometry: new THREE.PlaneGeometry(1, 1, 10, 10), 
-            color: {r: 1, g: 0, b: 0},
-            nbLines: 4, 
-            nbColumns: 4,
-            nbDepth: 4,
-            offset: -30,
-            gap: {x: 1, y: 1, z: 1}
-        })  */
+        this.setCubeMaterial()
+    
         this.setInstancedGeometry({
             geometry: new THREE.BoxGeometry(15,15, 15), 
             color: {r: 1, g: 1, b: 0},
@@ -39,19 +30,17 @@ export default class Cube
         this.setInstancedGeometry({
             geometry: new THREE.PlaneGeometry(15,15), 
             color: {r: 0, g: 0, b: 1},
-            nbLines: 3, 
+            nbLines: 2, 
             nbDepth: 1,
-            nbColumns: 3,
+            nbColumns: 2,
             gap: {x: 160, y: 100,  z: 60},
-            offset: {x: 0, y:0, z: 200 } 
+            offset: {x: 82, y:50, z: 200 } 
 
         })
-       // this.setModel()
 
-       
        this.audio.on('beat', ()=> {
-        this.updateValues()
-     })
+            this.updateValues()
+        })
 
         this.setGui()
     }
@@ -62,9 +51,9 @@ export default class Cube
         this.instancedGeometry.copy(geometry)
 
         const aOffsets = []
-        const aPositions = []
         const aColors = []
         const aIsOns = []    
+        const aGroups = []    
         
 
         for(let i=-nbLines /2; i< nbLines/2; i++) {
@@ -74,8 +63,7 @@ export default class Cube
                     let y = k 
                     let z = j
 
-                   // if(x > 2  & x&
-                  //  if(x===0.5) i+=offset
+                    aGroups.push(Math.floor(Math.random() *4))
                     aOffsets.push( x * gap.x, y * gap.y , z  * gap.z)
                     aColors.push(color.r,color.g,color.b)
                     aIsOns.push(Math.random() < 0.9 ? 1.0 : 0.0)
@@ -86,38 +74,36 @@ export default class Cube
 
 
         this.instancedGeometry.instanceCount = aOffsets.length /3
-
         this.instancedGeometry.setAttribute( 'aOffset', new THREE.InstancedBufferAttribute( new Float32Array( aOffsets ), 3) );
         this.instancedGeometry.setAttribute( 'aColor', new THREE.InstancedBufferAttribute( new Float32Array( aColors ), 3) );
         this.instancedGeometry.setAttribute( 'aIsOn', new THREE.InstancedBufferAttribute( new Float32Array( aIsOns ), 1) );
+        this.instancedGeometry.setAttribute( 'aGroup', new THREE.InstancedBufferAttribute( new Float32Array(  aGroups ), 1) );
 
-        this.mesh = new THREE.Mesh(this.instancedGeometry,this.material)
-
+        this.mesh = new THREE.Mesh(this.instancedGeometry,this.cubeMaterial)
         this.mesh.frustumCulled = false
         this.mesh.position.set(offset.x, offset.y,offset.z)
-        if(offset.z === 200) this.aIsOns = aIsOns
+
         this.scene.add(this.mesh) 
     }
 
 
-    setMaterial() {
+    setCubeMaterial() {
         this.uniforms = {
-            uTime: { value: 0.0 }
+            uTime: { value: 0.0 },
+            uGroup: {value: 0.0}
         };
 
-         this.material = new THREE.ShaderMaterial({
+         this.cubeMaterial = new THREE.ShaderMaterial({
             uniforms: this.uniforms,
             vertexShader,
             fragmentShader,
             transparent: true,
             side: THREE.DoubleSide,
-          //  wireframe: true
         });
     }
 
     setGui() {
         if(this.debug.active) {
-
             this.debugFolder = this.debug.ui.addFolder('plane')
             this.debugFolder.add(this.mesh.position, 'x', -10, 10)
             this.debugFolder.add(this.mesh.position, 'y', -10, 10)
@@ -129,55 +115,12 @@ export default class Cube
         }
     }
 
-    interval() {
-        const aIsOns=[]
-        for(let i=-this.nbLines/2; i<this.nbLines/2; i+=2) {
-            for(let j=-this.nbColumns/2; j<this.nbColumns/2; j+=3) {
-                aIsOns.push(Math.random() < 0.2 ? 1.0 : 0.0)
-            }
-        } 
-
-        this.instancedGeometry.setAttribute( 'aIsOn', new THREE.InstancedBufferAttribute( new Float32Array( aIsOns ), 1) );
-    }
-
     updateValues() {    
-
-
-
-        const nbLines= 11
-        const nbColumns = 8
-        const nbDepth =4
-        const newAons = []
-        for(let i=-nbLines /2; i< nbLines/2; i++) {
-            for(let j=-nbDepth/2 ; j<nbDepth/2 ; j++) {
-                for(let k=-nbColumns/2; k< nbColumns/2; k++) {
-                    let x = i 
-                    let y = k 
-                    let z = j
-                     newAons.push(Math.random() < 0.7 ? 1.0 : 0.0)
-                }
-            }
-        }
-        
-    /*     for(let i=2; i< nbLines/2; i++) {
-            for(let j=-nbDepth/2; j<nbDepth/2; j++) {
-                for(let k=-nbColumns/2; k< nbColumns/2; k++) {
-                    let x = i 
-                    let y = k 
-                    let z = j
-
-                   newAons.push(Math.random() < 0.9 ? 1.0 : 0.0)
-                }
-            }
-        } */
-        console.log(newAons.length);
-        this.aIsOns = newAons
-        this.instancedGeometry.setAttribute( 'aIsOn', new THREE.InstancedBufferAttribute( new Float32Array( this.aIsOns ), 1) );
-
+        this.cubeMaterial.uniforms.uGroup.value = Math.floor(Math.random() *4)
     }
 
   
     update() {
-        this.material.uniforms.uTime.value += .05
+        this.cubeMaterial.uniforms.uTime.value += .05
     }
 }

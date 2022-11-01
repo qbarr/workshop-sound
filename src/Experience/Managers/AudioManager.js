@@ -1,15 +1,16 @@
-import Audio from './Audio'
-import EventEmitter from './EventEmitter'
+import gsap from 'gsap'
+import Audio from '../Utils/Audio'
+import EventEmitter from '../Utils/EventEmitter'
 
 export default class AudioManager extends EventEmitter {
     constructor(){
         super()
         this.audio = null
-        document.addEventListener('click', () => this.startAudio()) 
+        document.getElementById('start-button').addEventListener('click', () => this.startAudio()) 
     }
     
-
     startAudio(){
+        gsap.to('#start-button', {opacity: 0, duration: 1})
         if(this.audio) return
         this.audio = new Audio()
         this.audio.start( {
@@ -20,6 +21,10 @@ export default class AudioManager extends EventEmitter {
 
     }
 
+    stopAudio() {
+        gsap.to(this.audio.audio, {volume:0, duration: 3.5})
+    }
+
     getDatas() {
         if(this.audio) return this.audio.values
         else return null
@@ -27,12 +32,10 @@ export default class AudioManager extends EventEmitter {
 
     onBeat() {
         this.trigger('beat')
-        
-     //   console.log(this.audio.values);
     }
 
     update(){
-        if(this.audio)this.audio.update()
+       if(this.audio)this.audio.update()
     }
 
 }

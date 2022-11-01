@@ -9,8 +9,8 @@ import World from './World/World.js'
 import Resources from './Utils/Resources.js'
 
 import sources from './sources.js'
-import AudioManager from './Utils/AudioManager.js'
-import BlobManager from './World/BlobManager.js'
+import AudioManager from './Managers/AudioManager.js'
+
 
 let instance = null
 
@@ -25,28 +25,21 @@ export default class Experience
         }
         instance = this
         
-        // Global access
         window.experience = this
 
-        // Options
         this.canvas = _canvas
 
-        // Setup
         this.debug = new Debug()
         this.sizes = new Sizes()
         this.time = new Time()
         this.audio = new AudioManager()
         this.scene = new THREE.Scene()
-        this.blob = new BlobManager()
         this.resources = new Resources(sources)
         this.camera = new Camera()
         this.renderer = new Renderer()
 
         this.world = new World()
 
-
-
-        // Resize event
         this.sizes.on('resize', () =>
         {
             this.resize()
@@ -72,7 +65,7 @@ export default class Experience
         this.audio.update()
         this.world.update()
         this.renderer.update()
-        this.blob.update()
+
     }
 
     destroy()
@@ -88,12 +81,10 @@ export default class Experience
             {
                 child.geometry.dispose()
 
-                // Loop through the material properties
                 for(const key in child.material)
                 {
                     const value = child.material[key]
 
-                    // Test if there is a dispose function
                     if(value && typeof value.dispose === 'function')
                     {
                         value.dispose()
